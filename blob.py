@@ -57,12 +57,72 @@ def remove_blob_from_container():
         exit()
 
 
+def create_new_blob_container():
+    from azure.core.exceptions import ResourceExistsError
+    print('\nCreate Blob Container')
+    container_name = input('Enter New Container Name: ')
+    try:
+        blob_service_client = BlobServiceClient.from_connection_string(config.string)
+        new_container = blob_service_client.create_container(container_name)
+        properties = new_container.get_container_properties()
+    except ResourceExistsError:
+        print("Container already exists.")
+    except Exception as e:
+        print(e)
+        exit()
+
+
+def varify_container_existence():
+    from azure.core.exceptions import ResourceNotFoundError
+    container_name = input('Enter Container Name: ')
+
+    try:
+        blob_service_client = BlobServiceClient.from_connection_string(config.string)
+        container_client = blob_service_client.get_container_client(container_name)
+        for blob in container_client.list_blobs():
+            print("Found blob: ", blob.name)
+    except ResourceNotFoundError:
+        print("\nContainer not found.")
+        exit()
+
+
+def delete_container():
+    from azure.core.exceptions import ResourceNotFoundError
+    container_name = input('Enter Container Name To Be Removed: ')
+    try:
+        blob_service_client = BlobServiceClient.from_connection_string(config.string)
+        blob_service_client.delete_container(container_name)
+    except ResourceNotFoundError:
+        print("Container already deleted.")
+
+
+def list_all_containers():
+    try:
+        blob_service_client = BlobServiceClient.from_connection_string(config.string)
+        all_containers = blob_service_client.list_containers(include_metadata=True)
+        for container in all_containers:
+            print("*\t" + container['name'])
+    except Exception as e:
+        print(e)
+        exit()
+
+
+def restore_deleted_container():
+    print('Still Under Dev\n')
+    exit()
+
+
 def init():
-    options = ['1', '2', '3', '4']
+    options = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
     msg_1 = '1: List Blobs In Container\n' \
             '2: Upload Blob To Container\n' \
             '3: Remove Blob From Container\n' \
-            '4: Download Blob From Container'
+            '4: Download Blob From Container\n' \
+            '5: Create New Blob Container\n' \
+            '6: Check If Container Exists\n' \
+            '7: Remove Container\n' \
+            '8: List All Containers\n' \
+            '9: Restore Deleted Container\n' \
 
     print(msg_1)
     option = input('Enter Option: ')
@@ -74,7 +134,12 @@ def init():
         '1': list_blobs_in_container,
         '2': upload_blob_to_container,
         '3': remove_blob_from_container,
-        '4': download_blob_from_container
+        '4': download_blob_from_container,
+        '5': create_new_blob_container,
+        '6': varify_container_existence,
+        '7': delete_container,
+        '8': list_all_containers,
+        '9': restore_deleted_container
     }
 
     function = function_library[option]
